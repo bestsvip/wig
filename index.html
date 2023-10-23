@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Word Input Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+        /* html,body{
+            width: 100%;
+        } */
+        #wordInputForm {
+            position: fixed;
+            width: calc(100% - 10px);
+            top:10px;
+        }
+
+        #wordInput {
+            min-width: 300px;
+            height: 30px;
+            padding: 6px;
+            border: 0;
+            border-bottom: 1px solid #000;
+            outline: none;
+            font-size: xx-large;
+            /* border-radius: 10px; */
+        }
+
+        #tuijian {
+            display: block;
+            padding: 10px;
+            height: auto;
+        }
+
+        .randword {
+            width: calc(100% - 60px);
+            height: auto;
+            padding: 20px;
+            margin: 10px;
+            background-color: #ddd;
+            margin-top: 6px;
+            border-radius: 10px;
+            background-image: linear-gradient(to right, #fad0c4 0%, #fad0c4 1%, #ffd1ff 100%);
+            /* color: #fff; */
+            /* background-image: linear-gradient(to right, #a18cd1 0%, #fbc2eb 100%);    */
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        span {
+            font-size: 20px;
+            color: #666;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div style="position: fixed; top:10px;right: 10px;z-index: 9;">
+        <input type="file" id="press" accept=".WIG" />
+        <button onclick="document.querySelector('input[type=file]').click()">选择文件</button>
+        <button type="submit" onclick="daochu()">导出</button>
+    </div>
+    <form id="wordInputForm">
+        <input type="text" id="wordInput" placeholder="Enter a word...">
+        <button type="submit">Submit</button>
+        <button type="submit" onclick="tuijian()">推荐</button>
+    </form>
+    <div style="margin-top: 60px;">
+        <h1 id="wordChain"></h1>
+        <div id="tuijian"></div>
+    </div>
+    <script src="Word.js"></script>
+    <script src="map.js"></script>
+</body>
+
+</html>
+<script>
+    keys = Object.keys(wordsbase)
+    values = Object.values(wordsbase)
+
+    // 按字母分类
+    // let sortedArr = keys.reduce((accumulator, currentValue) => {
+    //     let firstLetter = currentValue[0].toUpperCase(); // 转换为大写字母
+    //     if (!accumulator[firstLetter]) {
+    //         accumulator[firstLetter] = [];
+    //     }
+    //     accumulator[firstLetter].push(currentValue);
+    //     return accumulator;
+    // }, {});
+
+    let randomword = '';
+    let currentWords = [];
+    let currentWordstitle = '';
+    let currentWordIndex = -1;
+
+    document.getElementById("wordInputForm").addEventListener("submit", function (event) {
+        event.preventDefault(); // 阻止表单的默认提交行为
+        let wordInput = document.getElementById("wordInput");
+        let word = wordInput.value;
+        words = word + " ".repeat(5) + '<span>' + wordsbase[word] + '</span>'
+        wordInput.value = ''
+        if (word != '') {
+            if (currentWords.indexOf(words) == -1) { // 检查新单词是否与前一个单词不同
+                if (currentWordstitle == '' || currentWordstitle.toUpperCase() == word.charAt(0).toUpperCase()) {
+                    if (keys.indexOf(word) != -1) {
+                        currentWords.push(words); // 将新单词添加到列表中
+                        currentWordIndex++; // 更新当前单词的索引
+                        if (currentWordIndex >= currentWords.length) { // 如果到达了单词列表的末尾，则重置索引为0
+                            currentWordIndex = 0;
+                        }
+                        let nextWord = currentWords[currentWordIndex]; // 获取下一个单词
+                        document.getElementById("wordChain").innerHTML = "Chain: <br>" + currentWords.join("<br> -> ") //+ " -> " + nextWord; // 显示当前和下一个单词的链条
+                        currentWordstitle = word.substr(-1)
+                    } else {
+                        alert('没有这个单词')
+                    }
+                } else {
+                    alert('接龙失败，首尾不同')
+                }
+            } else {
+                alert('接龙失败,不可重复')
+            }
+        }
+    })
+
+    function tuijianword() {
+        if (currentWordstitle.length == 0) {
+            var randomNums = [];
+            while (randomNums.length < 4) {
+                var randomIndex = Math.floor(Math.random() * keys.length);
+                var num = keys.splice(randomIndex, 1)[0];
+                randomNums.push(num);
+            }
+            return randomNums
+        }
+
+        else {
+            let wordInput = document.getElementById("wordInput");
+            let word = wordInput.value;
+            letter = sortedArr[currentWordstitle.charAt(0).toUpperCase()]
+
+            var randomNums = [];
+            while (randomNums.length < 4) {
+                var randomIndex = Math.floor(Math.random() * letter.length);
+                var num = letter.splice(randomIndex, 1)[0];
+                randomNums.push(num);
+            }
+            return randomNums
+        }
+    }
+
+    function tuijian() {
+        randomNums = tuijianword()
+        randword = ''
+        for (i = 0; i < randomNums.length; i++) {
+            randword += '<div class="randword" onclick="randomword = \'' + randomNums[i] + '\'"><table><tr><td>' + randomNums[i] + '</td><td>' + '&nbsp;'.repeat(4) + '</td><td>' + wordsbase[randomNums[i]] + '</td></tr></table></div>'
+        }
+        document.getElementById("tuijian").innerHTML = randword
+    }
+
+    rem = document.getElementById("tuijian")
+    rem.onclick = function () {
+        rem.innerHTML = ''
+        let word = randomword
+        words = word + " ".repeat(5) + '<span>' + wordsbase[word] + '</span>'
+        if (word && currentWords.indexOf(words) == -1) { // 检查新单词是否与前一个单词不同
+            if (currentWordstitle == '' || currentWordstitle.toUpperCase() == word.charAt(0).toUpperCase()) {
+                currentWords.push(words); // 将新单词添加到列表中
+                currentWordIndex++; // 更新当前单词的索引
+                if (currentWordIndex >= currentWords.length) { // 如果到达了单词列表的末尾，则重置索引为0
+                    currentWordIndex = 0;
+                }
+                let nextWord = currentWords[currentWordIndex]; // 获取下一个单词
+                document.getElementById("wordChain").innerHTML = "Chain: <br>" + currentWords.join("<br> -> ")  //+ " -> " + nextWord; // 显示当前和下一个单词的链条
+                currentWordstitle = word.substr(-1)
+            }
+        }
+    }
+
+    function daochu() {
+        var text = currentWords; //保存错题
+        var blob = new Blob([text]);
+        var anchor = document.createElement("a");
+        anchor.download = 'Worded.WIG';
+        anchor.href = window.URL.createObjectURL(blob);
+        anchor.target = "_blank";
+        anchor.style.display = "none"; // just to be safe!
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
+
+    }
+    document.getElementById('press')
+        .addEventListener('change', function selectedFilechanged() {
+            if (this.files.length === 0) {
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function fileReadcompleted() {
+                //当读取完如时，内容只在reader,result中
+                currentWords = reader.result
+                document.getElementById("wordChain").innerHTML = "Chain: <br>" + currentWords.replaceAll(",", '<br> -> ')//+ " -> " + nextWord; // 显示当前和下一个单词的链条
+            };
+            reader.readAsText(this.files[0], "utf-8");
+            // currentWords = eval(currentWords)
+        })
+
+</script>
