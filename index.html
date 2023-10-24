@@ -5,10 +5,7 @@
     <title>Word Input Game</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
-        /* html,body{
-            width: 100%;
-        } */
-        #wordInputForm {
+        #wordInputdiv {
             position: fixed;
             width: calc(100% - 10px);
             top:10px;
@@ -22,7 +19,6 @@
             border-bottom: 1px solid #000;
             outline: none;
             font-size: xx-large;
-            /* border-radius: 10px; */
         }
 
         #tuijian {
@@ -40,8 +36,6 @@
             margin-top: 6px;
             border-radius: 10px;
             background-image: linear-gradient(to right, #fad0c4 0%, #fad0c4 1%, #ffd1ff 100%);
-            /* color: #fff; */
-            /* background-image: linear-gradient(to right, #a18cd1 0%, #fbc2eb 100%);    */
         }
 
         input[type="file"] {
@@ -60,13 +54,13 @@
     <div style="position: fixed; top:10px;right: 10px;z-index: 9;">
         <input type="file" id="press" accept=".WIG" />
         <button onclick="document.querySelector('input[type=file]').click()">选择文件</button>
-        <button type="submit" onclick="daochu()">导出</button>
+        <button onclick="daochu()">导出</button>
     </div>
-    <form id="wordInputForm">
+    <div id="wordInputdiv">
         <input type="text" id="wordInput" placeholder="Enter a word...">
-        <button type="submit">Submit</button>
-        <button type="submit" onclick="tuijian()">推荐</button>
-    </form>
+        <button onclick="submit()">提交</button>
+        <button onclick="tuijian()">推荐</button>
+    </div>
     <div style="margin-top: 60px;">
         <h1 id="wordChain"></h1>
         <div id="tuijian"></div>
@@ -95,8 +89,7 @@
     let currentWordstitle = '';
     let currentWordIndex = -1;
 
-    document.getElementById("wordInputForm").addEventListener("submit", function (event) {
-        event.preventDefault(); // 阻止表单的默认提交行为
+    function submit() {
         let wordInput = document.getElementById("wordInput");
         let word = wordInput.value;
         words = word + " ".repeat(5) + '<span>' + wordsbase[word] + '</span>'
@@ -123,7 +116,7 @@
                 alert('接龙失败,不可重复')
             }
         }
-    })
+    }
 
     function tuijianword() {
         if (currentWordstitle.length == 0) {
@@ -180,7 +173,7 @@
     }
 
     function daochu() {
-        var text = currentWords; //保存错题
+        var text = currentWords; 
         var blob = new Blob([text]);
         var anchor = document.createElement("a");
         anchor.download = 'Worded.WIG';
@@ -199,12 +192,11 @@
             }
             const reader = new FileReader();
             reader.onload = function fileReadcompleted() {
-                //当读取完如时，内容只在reader,result中
                 currentWords = reader.result
-                document.getElementById("wordChain").innerHTML = "Chain: <br>" + currentWords.replaceAll(",", '<br> -> ')//+ " -> " + nextWord; // 显示当前和下一个单词的链条
+                currentWords = currentWords.split(',')
+                document.getElementById("wordChain").innerHTML = "Chain: <br>" + currentWords.join("<br> -> ")//+ " -> " + nextWord; // 显示当前和下一个单词的链条
             };
             reader.readAsText(this.files[0], "utf-8");
-            // currentWords = eval(currentWords)
         })
 
 </script>
