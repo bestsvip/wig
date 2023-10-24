@@ -5,10 +5,13 @@
     <title>Word Input Game</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
-        #wordInputdiv {
+        #Formcss{
+            width: 100%;
+            background-color: #fff;
             position: fixed;
             width: calc(100% - 10px);
-            top:10px;
+            top:0px;
+            padding-top: 10px;
         }
 
         #wordInput {
@@ -19,6 +22,7 @@
             border-bottom: 1px solid #000;
             outline: none;
             font-size: xx-large;
+            /* border-radius: 10px; */
         }
 
         #tuijian {
@@ -36,6 +40,8 @@
             margin-top: 6px;
             border-radius: 10px;
             background-image: linear-gradient(to right, #fad0c4 0%, #fad0c4 1%, #ffd1ff 100%);
+            /* color: #fff; */
+            /* background-image: linear-gradient(to right, #a18cd1 0%, #fbc2eb 100%);    */
         }
 
         input[type="file"] {
@@ -52,15 +58,17 @@
 
 <body>
     <div style="position: fixed; top:10px;right: 10px;z-index: 9;">
+        <button onclick="tuijian()">推荐</button>
         <input type="file" id="press" accept=".WIG" />
         <button onclick="document.querySelector('input[type=file]').click()">选择文件</button>
         <button onclick="daochu()">导出</button>
     </div>
-    <div id="wordInputdiv">
+    <div id="Formcss">
+    <form id="wordInputForm">
         <input type="text" id="wordInput" placeholder="Enter a word...">
-        <button onclick="submit()">提交</button>
-        <button onclick="tuijian()">推荐</button>
-    </div>
+        <button type="submit">Submit</button>
+    </form>
+</div>
     <div style="margin-top: 60px;">
         <h1 id="wordChain"></h1>
         <div id="tuijian"></div>
@@ -73,23 +81,14 @@
 <script>
     keys = Object.keys(wordsbase)
     values = Object.values(wordsbase)
-
-    // 按字母分类
-    // let sortedArr = keys.reduce((accumulator, currentValue) => {
-    //     let firstLetter = currentValue[0].toUpperCase(); // 转换为大写字母
-    //     if (!accumulator[firstLetter]) {
-    //         accumulator[firstLetter] = [];
-    //     }
-    //     accumulator[firstLetter].push(currentValue);
-    //     return accumulator;
-    // }, {});
-
+    
     let randomword = '';
     let currentWords = [];
     let currentWordstitle = '';
     let currentWordIndex = -1;
 
-    function submit() {
+    document.getElementById("wordInputForm").addEventListener("submit", function (event) {
+        event.preventDefault(); // 阻止表单的默认提交行为
         let wordInput = document.getElementById("wordInput");
         let word = wordInput.value;
         words = word + " ".repeat(5) + '<span>' + wordsbase[word] + '</span>'
@@ -116,7 +115,8 @@
                 alert('接龙失败,不可重复')
             }
         }
-    }
+        window.scrollTo(0, document.body.scrollHeight);
+    })
 
     function tuijianword() {
         if (currentWordstitle.length == 0) {
@@ -151,6 +151,7 @@
             randword += '<div class="randword" onclick="randomword = \'' + randomNums[i] + '\'"><table><tr><td>' + randomNums[i] + '</td><td>' + '&nbsp;'.repeat(4) + '</td><td>' + wordsbase[randomNums[i]] + '</td></tr></table></div>'
         }
         document.getElementById("tuijian").innerHTML = randword
+        window.scrollTo(0, document.body.scrollHeight);
     }
 
     rem = document.getElementById("tuijian")
@@ -174,7 +175,7 @@
 
     function daochu() {
         var text = currentWords; 
-        var blob = new Blob([text]);
+        var blob = new Blob([text+','+currentWordstitle]);
         var anchor = document.createElement("a");
         anchor.download = 'Worded.WIG';
         anchor.href = window.URL.createObjectURL(blob);
@@ -192,8 +193,11 @@
             }
             const reader = new FileReader();
             reader.onload = function fileReadcompleted() {
+                //当读取完如时，内容只在reader,result中
                 currentWords = reader.result
                 currentWords = currentWords.split(',')
+                currentWordstitle = currentWords[currentWords.length-1]
+                currentWords.pop()
                 document.getElementById("wordChain").innerHTML = "Chain: <br>" + currentWords.join("<br> -> ")//+ " -> " + nextWord; // 显示当前和下一个单词的链条
             };
             reader.readAsText(this.files[0], "utf-8");
